@@ -4,56 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TimeLockedBond Deposit</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #f4f6fa;
-        margin: 0;
-        padding: 0;
-      }
-      .container {
-        max-width: 400px;
-        margin: 60px auto;
-        background: #fff;
-        padding: 32px;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      }
-      h2 {
-        margin-bottom: 24px;
-      }
-      input,
-      button {
-        width: 100%;
-        padding: 10px;
-        margin: 10px 0;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-      }
-      button {
-        background: #007bff;
-        color: #fff;
-        border: none;
-        cursor: pointer;
-      }
-      button:hover {
-        background: #0056b3;
-      }
-      .admin-btn {
-        background: #28a745;
-        margin-top: 16px;
-      }
-    </style>
+    <link rel="stylesheet" href="styles/fonts.css" />
+    <link rel="stylesheet" href="styles/index.css" />
+    <link rel="icon" type="image/png" href="styles/logo.png" />
   </head>
   <body>
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
-      <div style="padding:16px;">
-        <button id="connectWallet">Connect Wallet</button>
+    <div class="top-bar">
+      <button id="connectWallet" class="connect-wallet">Connect Wallet</button>
+      <div class="fixed-logo-bar">
+        <img src="styles/logo.png" alt="Logo" class="logo-img" />
       </div>
-      <div style="padding:16px;">
-        <button class="admin-btn" id="adminLogin">Admin Login</button>
-      </div>
+      <button class="admin-btn page-direct" id="adminLogin">Admin Login</button>
     </div>
+
     <div class="container">
       <h2>Deposit Bond</h2>
       <form id="depositForm">
@@ -67,85 +30,356 @@
         />
         <button type="submit">Deposit</button>
       </form>
-      <button id="disconnectWallet" style="background:#dc3545; color:#fff; margin-top:10px;">Disconnect Wallet</button>
       <div id="status"></div>
+    </div>
+    <div class="container" id="depositStatusContainer">
+      <h3>Your Deposit Status</h3>
+      <div id="depositStatus">
+        Connect your wallet to view your deposit status.
+      </div>
+      <button id="withdrawBtn">Withdraw</button>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script>
       let account;
-      // Force disconnect on page load
-      window.addEventListener('DOMContentLoaded', () => {
+      window.addEventListener("DOMContentLoaded", () => {
         account = undefined;
-        document.getElementById('status').innerText = 'Wallet disconnected.';
+        document.getElementById("status").innerText = "Wallet disconnected.";
+        updateDepositStatus();
+        updateWalletButton();
       });
       const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
       const contractABI = [
-        {"inputs":[{"internalType":"address","name":"_initialOwner","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},
-        {"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},
-        {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},
-        {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"depositor","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"remaining","type":"uint256"}],"name":"Deducted","type":"event"},
-        {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"depositor","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"releaseTime","type":"uint256"}],"name":"Deposited","type":"event"},
-        {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},
-        {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"depositor","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Withdrawn","type":"event"},
-        {"inputs":[],"name":"DURATION","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-        {"inputs":[{"internalType":"address","name":"_depositor","type":"address"},{"internalType":"uint256","name":"_amount","type":"uint256"}],"name":"deduct","outputs":[],"stateMutability":"nonpayable","type":"function"},
-        {"inputs":[],"name":"depositETH","outputs":[],"stateMutability":"payable","type":"function"},
-        {"inputs":[{"internalType":"address","name":"_depositor","type":"address"}],"name":"getTimeLeftReadable","outputs":[{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-        {"inputs":[{"internalType":"address","name":"_depositor","type":"address"}],"name":"getWithdrawableAmount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-        {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
-        {"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
-        {"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},
-        {"inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"}
+        {
+          inputs: [
+            { internalType: "address", name: "_initialOwner", type: "address" },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          inputs: [{ internalType: "address", name: "owner", type: "address" }],
+          name: "OwnableInvalidOwner",
+          type: "error",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "account", type: "address" },
+          ],
+          name: "OwnableUnauthorizedAccount",
+          type: "error",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "depositor",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "remaining",
+              type: "uint256",
+            },
+          ],
+          name: "Deducted",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "depositor",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "releaseTime",
+              type: "uint256",
+            },
+          ],
+          name: "Deposited",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "previousOwner",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "newOwner",
+              type: "address",
+            },
+          ],
+          name: "OwnershipTransferred",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "depositor",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "Withdrawn",
+          type: "event",
+        },
+        {
+          inputs: [],
+          name: "DURATION",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "_depositor", type: "address" },
+            { internalType: "uint256", name: "_amount", type: "uint256" },
+          ],
+          name: "deduct",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "depositETH",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "_depositor", type: "address" },
+          ],
+          name: "getTimeLeftReadable",
+          outputs: [
+            { internalType: "uint256", name: "", type: "uint256" },
+            { internalType: "uint256", name: "", type: "uint256" },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "_depositor", type: "address" },
+          ],
+          name: "getWithdrawableAmount",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "owner",
+          outputs: [{ internalType: "address", name: "", type: "address" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "renounceOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "address", name: "newOwner", type: "address" },
+          ],
+          name: "transferOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "withdraw",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
       ];
 
-
-      document.getElementById('connectWallet').onclick = async () => {
-        if (window.ethereum && window.ethereum.isMetaMask) {
-          try {
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            account = accounts[0];
-            document.getElementById('status').innerText = `Connected: ${account}`;
-          } catch (err) {
-            if (err.code === 4001) {
-              document.getElementById('status').innerText = 'Connection request rejected by user.';
-            } else {
-              document.getElementById('status').innerText = err.message;
-            }
-          }
-        } else {
-          alert('MetaMask not detected! Please install MetaMask to use this site.');
-        }
-      };
-
-      document.getElementById('disconnectWallet').onclick = () => {
-        account = undefined;
-        document.getElementById('status').innerText = 'Wallet disconnected.';
-      };
-
-      document.getElementById('depositForm').onsubmit = async (e) => {
-        e.preventDefault();
+      async function updateDepositStatus(withdrawn = false) {
+        const withdrawBtn = document.getElementById("withdrawBtn");
         if (!account) {
-          alert('Connect your wallet first!');
+          document.getElementById("depositStatus").innerText =
+            "Connect your wallet to view your deposit status.";
+          withdrawBtn.style.display = "none";
           return;
         }
-        const amount = document.getElementById('depositAmount').value;
+        try {
+          const provider = new ethers.providers.Web3Provider(
+            window.ethereum,
+            "any"
+          );
+          const contract = new ethers.Contract(
+            contractAddress,
+            contractABI,
+            provider
+          );
+          // Get withdrawable amount
+          const amount = await contract.getWithdrawableAmount(account);
+          const ethAmount = ethers.utils.formatEther(amount);
+          // Get time left
+          const [days, hours] = await contract.getTimeLeftReadable(account);
+          if (withdrawn) {
+            document.getElementById("depositStatus").innerText =
+              "Withdraw successful!";
+          } else {
+            document.getElementById(
+              "depositStatus"
+            ).innerText = `Withdrawable: ${ethAmount} ETH\nTime left: ${days} days, ${hours} hours`;
+          }
+          // Show withdraw button if funds are unlocked and available
+          if (ethAmount > 0 && days == 0 && hours == 0) {
+            withdrawBtn.style.display = "";
+          } else {
+            withdrawBtn.style.display = "none";
+          }
+        } catch (err) {
+          // Detect 'No deposit found' error
+          if (err.message && err.message.includes("No deposit found")) {
+            document.getElementById("depositStatus").innerText =
+              "No deposit found.";
+          } else {
+            document.getElementById("depositStatus").innerText =
+              "Error fetching deposit info.";
+          }
+          withdrawBtn.style.display = "none";
+        }
+      }
+      document.getElementById("withdrawBtn").onclick = async () => {
+        if (!account) return;
+        try {
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          const contract = new ethers.Contract(
+            contractAddress,
+            contractABI,
+            signer
+          );
+          const tx = await contract.withdraw();
+          document.getElementById("status").innerText =
+            "Withdraw transaction sent! Waiting for confirmation...";
+          await tx.wait();
+          document.getElementById("status").innerText = "Withdraw successful!";
+          updateDepositStatus(true);
+        } catch (err) {
+          document.getElementById("status").innerText = err.message;
+        }
+      };
+
+      function updateWalletButton() {
+        const btn = document.getElementById("connectWallet");
+        if (account) {
+          btn.textContent = "Disconnect Wallet";
+          btn.style.background = "#dc3545";
+          btn.onclick = () => {
+            account = undefined;
+            document.getElementById("status").innerText =
+              "Wallet disconnected.";
+            updateDepositStatus();
+            updateWalletButton();
+          };
+        } else {
+          btn.textContent = "Connect Wallet";
+          btn.style.background = "";
+          btn.onclick = async () => {
+            if (window.ethereum && window.ethereum.isMetaMask) {
+              try {
+                const accounts = await window.ethereum.request({
+                  method: "eth_requestAccounts",
+                });
+                account = accounts[0];
+                document.getElementById(
+                  "status"
+                ).innerText = `Connected: ${account}`;
+                updateDepositStatus();
+                updateWalletButton();
+              } catch (err) {
+                if (err.code === 4001) {
+                  document.getElementById("status").innerText =
+                    "Connection request rejected by user.";
+                } else {
+                  document.getElementById("status").innerText = err.message;
+                }
+              }
+            } else {
+              alert(
+                "MetaMask not detected! Please install MetaMask to use this site."
+              );
+            }
+          };
+        }
+      }
+
+      document.getElementById("depositForm").onsubmit = async (e) => {
+        e.preventDefault();
+        if (!account) {
+          alert("Connect your wallet first!");
+          return;
+        }
+        const amount = document.getElementById("depositAmount").value;
         if (amount <= 0) return;
         try {
           const provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = provider.getSigner();
-          const contract = new ethers.Contract(contractAddress, contractABI, signer);
-          const tx = await contract.depositETH({ value: ethers.utils.parseEther(amount) });
-          document.getElementById('status').innerText = 'Transaction sent! Waiting for confirmation...';
+          const contract = new ethers.Contract(
+            contractAddress,
+            contractABI,
+            signer
+          );
+          const tx = await contract.depositETH({
+            value: ethers.utils.parseEther(amount),
+          });
+          document.getElementById("status").innerText =
+            "Transaction sent! Waiting for confirmation...";
           await tx.wait();
-          document.getElementById('status').innerText = 'Deposit successful!';
+          document.getElementById("status").innerText = "Deposit successful!";
+          updateDepositStatus();
         } catch (err) {
-          document.getElementById('status').innerText = err.message;
+          document.getElementById("status").innerText = err.message;
         }
       };
 
-      document.getElementById('adminLogin').onclick = () => {
+      document.getElementById("adminLogin").onclick = () => {
         // Simple pseudo-login: redirect to admin.html
-        window.location.href = 'admin.html';
+        window.location.href = "admin.html";
       };
     </script>
   </body>

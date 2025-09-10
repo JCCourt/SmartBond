@@ -1,0 +1,243 @@
+body {
+  font-family: 'Inter', Arial, sans-serif;
+  background: #fff;
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 420px;
+  margin: 48px auto;
+  background: rgba(255,255,255,0.95);
+  border-radius: 16px;
+  box-shadow: 0 6px 32px rgba(106,17,203,0.12);
+  padding: 32px 24px;
+}
+
+h1, h2, h3 {
+  color: #6a11cb;
+  font-weight: 700;
+  margin-bottom: 16px;
+  letter-spacing: 0.5px;
+}
+
+label {
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: block;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="password"],
+input[type="email"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 14px;
+  border: 1px solid #6a11cb;
+  border-radius: 8px;
+  background: #f3f6fd;
+  color: #222;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+button,
+input[type="submit"] {
+  background: #2575fc;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: background 0.2s;
+}
+
+button:hover,
+input[type="submit"]:hover {
+  background: #1a5dcc;
+}
+
+button.connect-wallet,
+button.page-direct {
+    padding: 6px 18px;
+    font-size: 1rem;
+    min-width: 0;
+    width: auto;
+    border-radius: 6px;
+}
+
+.fixed-logo-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    background: transparent;
+    pointer-events: none;
+    height: 100px;
+}
+.fixed-logo-bar .logo-img {
+    height: 80px;
+    max-width: 220px;
+    opacity: 0.95;
+    pointer-events: auto;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 16px 0 32px 0;
+  position: relative;
+}
+.top-bar button.connect-wallet {
+  order: 1;
+  align-self: flex-start;
+  margin-left: 16px;
+}
+.top-bar .admin-btn.page-direct {
+  order: 3;
+  align-self: flex-start;
+  margin-right: 16px;
+}
+.top-bar .logo-bar {
+  order: 2;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.top-bar .logo-img {
+  height: 80px;
+  max-width: 220px;
+  opacity: 0.95;
+}
+.fixed-logo-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  background: transparent;
+  pointer-events: none;
+  height: 100px;
+}
+.fixed-logo-bar .logo-img {
+  height: 80px;
+  max-width: 220px;
+  opacity: 0.95;
+  pointer-events: auto;
+}
+
+.status {
+  background: #e3e7fa;
+  color: #2575fc;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 18px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.admin-section {
+  background: #f3f6fd;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 32px;
+  box-shadow: 0 2px 12px rgba(106,17,203,0.08);
+}
+
+.hidden {
+  display: none;
+}
+
+.error {
+  color: #e53935;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.success {
+  color: #43a047;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.wallet-address {
+  font-size: 0.95rem;
+  background: #e3e7fa;
+  padding: 6px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  display: inline-block;
+}
+
+.deposit-list {
+  background: #e3e7fa;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 18px;
+}
+
+.deposit-list ul {
+  padding-left: 18px;
+}
+
+.deposit-list li {
+  margin-bottom: 8px;
+}
+
+.time-left {
+  font-size: 1.08rem;
+  color: #2575fc;
+  margin-bottom: 12px;
+}
+
+.contract-balance {
+  font-size: 1.08rem;
+  color: #2575fc;
+  margin-bottom: 12px;
+}
+
+.admin-login {
+  margin-top: 24px;
+  background: #e3e7fa;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(106,17,203,0.08);
+}
+
+.admin-login label {
+  color: #2575fc;
+}
+
+.admin-login input[type="password"] {
+  background: #f3f6fd;
+}
+
+.admin-login button {
+  margin-top: 10px;
+}
+
+.admin-login .error {
+  color: #e53935;
+}
+
+.admin-login .success {
+  color: #43a047;
+}
