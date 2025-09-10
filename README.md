@@ -59,10 +59,23 @@ npx http-server .
 - Open MetaMask and switch to the "Localhost 8545" network.
 - Import the admin account using its private key (see Hardhat node output for accounts and keys).
 
+
 ### 7. Interact with the Contract
 
 - Use `index.html` for user deposits.
 - Use `admin.html` for admin deductions and contract management.
+
+### 8. Testing Withdrawals with TimeSkip
+
+To test the withdrawal feature without waiting for the lock period to expire, use the `TimeSkip` script:
+
+```
+npx hardhat run scripts/TimeSkip.js --network localhost
+```
+
+This script advances the blockchain time so you can immediately test withdrawals. Run it after making a deposit, then try withdrawing from the frontend.
+
+Note: Make sure your contract and test environment support time manipulation (Hardhat local node).
 
 ---
 
