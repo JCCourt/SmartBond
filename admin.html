@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - TimeLockedBond</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6fa; margin: 0; padding: 0; }
+        .container { max-width: 400px; margin: 60px auto; background: #fff; padding: 32px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        h2 { margin-bottom: 24px; }
+        input, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #ccc; }
+    button { background: #dc3545; color: #fff; border: none; cursor: pointer; }
+    button:hover { background: #a71d2a; }
+    .back-btn { background: #007bff; margin-top: 16px; }
+    #connectWallet { background: #007bff; color: #fff; border: none; }
+    #connectWallet:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
+            <div style="padding:16px;">
+                <button id="connectWallet">Connect Wallet</button>
+            </div>
+            <div style="padding:16px;">
+                <button class="back-btn" onclick="window.location.href='index.html'">Deposit Page</button>
+            </div>
+        </div>
+        <div class="container">
+                <h2>Admin Panel</h2>
+                <div id="contractBalance" style="margin-bottom:10px;"></div>
+                <div id="ownerStatus"></div>
+                <form id="deductForm" style="display:none;">
+                        <input type="text" id="userAddress" placeholder="User Address" required />
+                        <input type="number" id="deductAmount" placeholder="Deduct Amount (ETH)" min="0.01" step="0.01" required />
+                        <button type="submit">Deduct</button>
+                </form>
+                <div id="status"></div>
+        </div>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script>
+    let account;
+    const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Set your deployed address
+                        const contractABI = [
+                            {
+                                "inputs": [
+                                    { "internalType": "address", "name": "_initialOwner", "type": "address" }
+                                ],
+                                "stateMutability": "nonpayable",
+                                "type": "constructor"
+                            },
+                            {
+                                "inputs": [
+                                    { "internalType": "address", "name": "owner", "type": "address" }
+                                ],
+                                "name": "OwnableInvalidOwner",
+                                "type": "error"
+                            },
+                            {
+                                "inputs": [
+                                    { "internalType": "address", "name": "account", "type": "address" }
+                                ],
+                                "name": "OwnableUnauthorizedAccount",
+                                "type": "error"
+                            },
+                            {
+                                "anonymous": false,
+                                "inputs": [
+                                    { "indexed": true, "internalType": "address", "name": "depositor", "type": "address" },
+                                    { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+                                    { "indexed": false, "internalType": "uint256", "name": "remaining", "type": "uint256" }
+                                ],
+                                "name": "Deducted",
+                                "type": "event"
+                            },
+                            {
+                                "anonymous": false,
+                                "inputs": [
+                                    { "indexed": true, "internalType": "address", "name": "depositor", "type": "address" },
+                                    { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" },
+                                    { "indexed": false, "internalType": "uint256", "name": "releaseTime", "type": "uint256" }
+                                ],
+                                "name": "Deposited",
+                                "type": "event"
+                            },
+                            {
+                                "anonymous": false,
+                                "inputs": [
+                                    { "indexed": true, "internalType": "address", "name": "previousOwner", "type": "address" },
+                                    { "indexed": true, "internalType": "address", "name": "newOwner", "type": "address" }
+                                ],
+                                "name": "OwnershipTransferred",
+                                "type": "event"
+                            },
+                            {
+                                "anonymous": false,
+                                "inputs": [
+                                    { "indexed": true, "internalType": "address", "name": "depositor", "type": "address" },
+                                    { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+                                ],
+                                "name": "Withdrawn",
+                                "type": "event"
+                            },
+                            {
+                                "inputs": [],
+                                "name": "DURATION",
+                                "outputs": [
+                                    { "internalType": "uint256", "name": "", "type": "uint256" }
+                                ],
+                                "stateMutability": "view",
+                                "type": "function"
+                            },
+                            {
+                                "inputs": [
+                                    { "internalType": "address", "name": "_depositor", "type": "address" },
+                                    { "internalType": "uint256", "name": "_amount", "type": "uint256" }
+                                ],
+                                "name": "deduct",
+                                "outputs": [],
+                                "stateMutability": "nonpayable",
+                                "type": "function"
+                            },
+                            {
+                                "inputs": [],
+                                "name": "depositETH",
+                                "outputs": [],
+                                "stateMutability": "payable",
+                                "type": "function"
+                            },
+                            {
+                                "inputs": [
+                                    { "internalType": "address", "name": "_depositor", "type": "address" }
+                                ],
+                                "name": "getTimeLeftReadable",
+                                "outputs": [
+                                    { "internalType": "uint256", "name": "", "type": "uint256" },
+                                    { "internalType": "uint256", "name": "", "type": "uint256" }
+                                ],
+                                "stateMutability": "view",
+                                "type": "function"
+                            },
+                            {
+                                "inputs": [
+                                    { "internalType": "address", "name": "_depositor", "type": "address" }
+                                ],
+                                "name": "getWithdrawableAmount",
+                                "outputs": [
+                                    { "internalType": "uint256", "name": "", "type": "uint256" }
+                                ],
+                                "stateMutability": "view",
+                                "type": "function"
+                            },
+                            {
+                                "inputs": [],
+                                "name": "owner",
+                                "outputs": [
+                                    { "internalType": "address", "name": "", "type": "address" }
+                                ],
+                                "stateMutability": "view",
+                                "type": "function"
+                            },
+                            {
+                                "inputs": [],
+                                "name": "renounceOwnership",
+                                "outputs": [],
+                                "stateMutability": "nonpayable",
+                                "type": "function"
+                            },
+                            {
+                                "inputs": [
+                                    { "internalType": "address", "name": "newOwner", "type": "address" }
+                                ],
+                                "name": "transferOwnership",
+                                "outputs": [],
+                                "stateMutability": "nonpayable",
+                                "type": "function"
+                            },
+                            {
+                                "inputs": [],
+                                "name": "withdraw",
+                                "outputs": [],
+                                "stateMutability": "nonpayable",
+                                "type": "function"
+                            }
+                        ];
+
+        document.getElementById('connectWallet').onclick = async () => {
+            // Show contract balance
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+                const balance = await provider.getBalance(contractAddress);
+                const ethBalance = ethers.utils.formatEther(balance);
+                document.getElementById('contractBalance').innerText = `Contract Balance: ${ethBalance} ETH`;
+            } catch (err) {
+                document.getElementById('contractBalance').innerText = 'Error fetching contract balance.';
+            }
+            if (window.ethereum) {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                account = accounts[0];
+                document.getElementById('status').innerText = `Connected: ${account}`;
+                // Check if owner
+                try {
+                    const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+                    const contract = new ethers.Contract(contractAddress, contractABI, provider);
+                    const ownerAddress = await contract.owner();
+                    if (account.toLowerCase() === ownerAddress.toLowerCase()) {
+                        document.getElementById('ownerStatus').innerText = 'You are the contract owner.';
+                        document.getElementById('deductForm').style.display = '';
+                    } else {
+                        document.getElementById('ownerStatus').innerText = 'You are NOT the contract owner. Admin features are disabled.';
+                        document.getElementById('deductForm').style.display = 'none';
+                    }
+                } catch (err) {
+                    document.getElementById('ownerStatus').innerText = 'Error checking owner: ' + err.message;
+                }
+            } else {
+                alert('MetaMask not detected!');
+            }
+        };
+
+        document.getElementById('deductForm').onsubmit = async (e) => {
+            e.preventDefault();
+            if (!account) {
+                alert('Connect your wallet first!');
+                return;
+            }
+            const userAddress = document.getElementById('userAddress').value.trim();
+            const amount = document.getElementById('deductAmount').value;
+            if (!userAddress || amount <= 0) return;
+            try {
+                // Validate address format before calling contract
+                if (!ethers.utils.isAddress(userAddress)) {
+                    document.getElementById('status').innerText = 'Invalid user address.';
+                    return;
+                }
+                const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+                const signer = provider.getSigner();
+                const contract = new ethers.Contract(contractAddress, contractABI, signer);
+                const tx = await contract.deduct(userAddress, ethers.utils.parseEther(amount));
+                document.getElementById('status').innerText = 'Deduction transaction sent! Waiting for confirmation...';
+                await tx.wait();
+                document.getElementById('status').innerText = 'Deduction successful!';
+            } catch (err) {
+                document.getElementById('status').innerText = err.message;
+            }
+        };
+    </script>
+</body>
+</html>
