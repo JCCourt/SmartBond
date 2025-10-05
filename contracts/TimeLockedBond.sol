@@ -13,7 +13,7 @@ contract TimeLockedBond is Ownable, ReentrancyGuard {
     }
 
     mapping(address => Deposit) private deposits;
-    uint256 public constant DURATION = 365 days; // Fixed: Replaced "1 years"
+    uint256 public constant DURATION = 2 minutes; // Short duration for testing
 
     // Events
     event Deposited(
@@ -95,6 +95,10 @@ function depositETH() external payable {
         returns (uint256)
     {
         Deposit storage depositRecord = deposits[_depositor];
+        // Check if deposit exists first
+        if (depositRecord.amount == 0) {
+            return 0;
+        }
         if (block.timestamp >= depositRecord.releaseTime) {
             return depositRecord.amount - depositRecord.deductedAmount;
         }
@@ -118,5 +122,48 @@ function getTimeLeftReadable(address _depositor)
         );
     }
 }
+
+    // Get complete deposit information
+    function getDepositInfo(address _depositor)
+        external
+        view
+        returns (
+            uint256 amount,
+            uint256 releaseTime,
+            uint256 deductedAmount,
+            uint256 availableAmount,
+            bool isWithdrawable
+        )
+    {
+        Deposit storage depositRecord = deposits[_depositor];
+        require(depositRecord.amount > 0, "No deposit found");
+        
+        uint256 available = 0;
+        bool withdrawable = false;
+        
+        // Always calculate available amount if expired
+        if (block.timestamp >= depositRecord.releaseTime) {
+            available = depositRecord.amount - depositRecord.deductedAmount;
+            withdrawable = available > 0;
+        }
+        
+        return (
+            depositRecord.amount,
+            depositRecord.releaseTime,
+            depositRecord.deductedAmount,
+            available,
+            withdrawable
+        );
+    }
+
+    // Check if deposit exists for an address
+    function hasDeposit(address _depositor) external view returns (bool) {
+        return deposits[_depositor].amount > 0;
+    }
+
+    // Debug function to check current timestamp
+    function getCurrentTimestamp() external view returns (uint256) {
+        return block.timestamp;
+    }
 
 }

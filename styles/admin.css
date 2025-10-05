@@ -1,22 +1,53 @@
+/* === UNIFIED COLOR SCHEME === */
+:root {
+  --primary-purple: #6a11cb;
+  --primary-blue: #2575fc;
+  --primary-blue-hover: #1a5fcf;
+  --secondary-green: #28a745;
+  --secondary-green-hover: #218838;
+  --secondary-yellow: #ffc107;
+  --secondary-yellow-hover: #e0a800;
+  --danger-red: #dc3545;
+  --danger-red-hover: #c82333;
+  
+  --background-white: #fff;
+  --background-light: #f8f9fa;
+  --background-lighter: #f3f6fd;
+  --background-purple-light: #e3e7fa;
+  
+  --border-light: #e0e6ed;
+  --border-primary: #6a11cb;
+  
+  --text-dark: #222;
+  --text-medium: #495057;
+  --text-light: #6c757d;
+  --text-success: #155724;
+  --text-warning: #856404;
+  --text-info: #0c5460;
+  
+  --shadow-primary: rgba(106, 17, 203, 0.12);
+  --shadow-light: rgba(106, 17, 203, 0.08);
+}
+
 body {
   font-family: 'Inter', Arial, sans-serif;
-  background: #fff;
-  color: #222;
+  background: var(--background-white);
+  color: var(--text-dark);
   margin: 0;
   padding: 0;
 }
 
 .container {
-  max-width: 420px;
+  max-width: 600px;
   margin: 48px auto;
   background: rgba(255,255,255,0.95);
   border-radius: 16px;
-  box-shadow: 0 6px 32px rgba(106,17,203,0.12);
+  box-shadow: 0 6px 32px var(--shadow-primary);
   padding: 32px 24px;
 }
 
 h1, h2, h3 {
-  color: #6a11cb;
+  color: var(--primary-purple);
   font-weight: 700;
   margin-bottom: 16px;
   letter-spacing: 0.5px;
@@ -26,6 +57,7 @@ label {
   font-weight: 500;
   margin-bottom: 8px;
   display: block;
+  color: var(--text-medium);
 }
 
 input[type="text"],
@@ -33,36 +65,61 @@ input[type="number"],
 input[type="password"],
 input[type="email"] {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 14px;
-  border: 1px solid #6a11cb;
+  padding: 12px;
+  margin-bottom: 16px;
+  border: 2px solid var(--border-light);
   border-radius: 8px;
-  background: #f3f6fd;
-  color: #222;
+  background: var(--background-light);
+  color: var(--text-dark);
   font-size: 1rem;
   box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus {
+  outline: none;
+  border-color: var(--primary-purple);
+  background: var(--background-white);
+  box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
 }
 
 button,
 input[type="submit"] {
-  background: #2575fc;
-  color: #fff;
+  background: var(--primary-blue);
+  color: var(--background-white);
   border: none;
   border-radius: 8px;
-  padding: 10px 0;
+  padding: 12px 0;
   font-size: 1rem;
   cursor: pointer;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   width: 100%;
   box-sizing: border-box;
   font-weight: 600;
   letter-spacing: 0.5px;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
 }
 
 button:hover,
 input[type="submit"]:hover {
-  background: #1a5dcc;
+  background: var(--primary-blue-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 117, 252, 0.3);
+}
+
+button:active,
+input[type="submit"]:active {
+  transform: translateY(0);
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 button.connect-wallet,
@@ -83,21 +140,22 @@ button.page-direct {
 }
 
 .status {
-  background: #e3e7fa;
-  color: #2575fc;
+  background: var(--background-purple-light);
+  color: var(--primary-blue);
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 18px;
   font-size: 1rem;
   font-weight: 500;
+  border: 1px solid var(--border-light);
 }
 
 .admin-section {
-  background: #f3f6fd;
+  background: var(--background-lighter);
   border-radius: 12px;
   padding: 20px;
   margin-top: 32px;
-  box-shadow: 0 2px 12px rgba(106,17,203,0.08);
+  box-shadow: 0 2px 12px var(--shadow-light);
 }
 
 .hidden {
@@ -105,31 +163,33 @@ button.page-direct {
 }
 
 .error {
-  color: #e53935;
+  color: var(--danger-red);
   font-weight: 600;
   margin-top: 8px;
 }
 
 .success {
-  color: #43a047;
+  color: var(--secondary-green);
   font-weight: 600;
   margin-top: 8px;
 }
 
 .wallet-address {
   font-size: 0.95rem;
-  background: #e3e7fa;
+  background: var(--background-purple-light);
   padding: 6px 12px;
   border-radius: 8px;
   margin-bottom: 12px;
   display: inline-block;
+  color: var(--text-medium);
 }
 
 .deposit-list {
-  background: #e3e7fa;
+  background: var(--background-purple-light);
   border-radius: 8px;
   padding: 12px;
   margin-top: 18px;
+  border: 1px solid var(--border-light);
 }
 
 .deposit-list ul {
@@ -138,34 +198,38 @@ button.page-direct {
 
 .deposit-list li {
   margin-bottom: 8px;
+  color: var(--text-medium);
 }
 
 .time-left {
   font-size: 1.08rem;
-  color: #2575fc;
+  color: var(--primary-blue);
   margin-bottom: 12px;
+  font-weight: 500;
 }
 
 .contract-balance {
   font-size: 1.08rem;
-  color: #2575fc;
+  color: var(--primary-blue);
   margin-bottom: 12px;
+  font-weight: 500;
 }
 
 .admin-login {
   margin-top: 24px;
-  background: #e3e7fa;
+  background: var(--background-purple-light);
   border-radius: 8px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(106,17,203,0.08);
+  box-shadow: 0 2px 8px var(--shadow-light);
+  border: 1px solid var(--border-light);
 }
 
 .admin-login label {
-  color: #2575fc;
+  color: var(--primary-blue);
 }
 
 .admin-login input[type="password"] {
-  background: #f3f6fd;
+  background: var(--background-lighter);
 }
 
 .admin-login button {
@@ -173,11 +237,11 @@ button.page-direct {
 }
 
 .admin-login .error {
-  color: #e53935;
+  color: var(--danger-red);
 }
 
 .admin-login .success {
-  color: #43a047;
+  color: var(--secondary-green);
 }
 
 .top-bar {
@@ -227,4 +291,218 @@ button.page-direct {
     max-width: 220px;
     opacity: 0.95;
     pointer-events: auto;
+}
+
+/* Admin Panel Specific Styles */
+
+/* Hidden elements by default */
+#deductForm {
+  display: none;
+}
+
+/* Selected User Info Section */
+#selectedUserInfo {
+  display: none;
+  margin: 16px 0;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e6ed;
+}
+
+#selectedUserInfo h4 {
+  margin-top: 0;
+  color: #6a11cb;
+}
+
+/* Deduction Section */
+.deduction-section {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.deduction-field {
+  margin-bottom: 15px;
+}
+
+.deduction-label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+/* Form Inputs */
+#deductAmount {
+  width: 150px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+#deductionReason {
+  width: 300px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+#deductionNotes {
+  width: 100%;
+  max-width: 400px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+#notesField {
+  margin-bottom: 15px;
+}
+
+/* Submit Button */
+.deduct-submit-btn {
+  background: var(--danger-red);
+  color: var(--background-white);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+}
+
+.deduct-submit-btn:hover {
+  background: var(--danger-red-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* Status Display */
+#status {
+  margin-top: 15px;
+  min-height: 0;
+  display: none;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: var(--background-light);
+  color: var(--text-medium);
+  font-size: 0.95rem;
+}
+
+/* Required field indicator */
+.required-indicator {
+  color: red;
+  display: none;
+}
+
+/* Status message types */
+.status-info {
+  color: var(--primary-blue);
+  font-weight: 600;
+}
+
+.status-success {
+  color: var(--secondary-green);
+  font-weight: 600;
+}
+
+.status-error {
+  color: var(--danger-red);
+  font-weight: 600;
+}
+
+/* Admin-specific styling */
+#contractBalance, #ownerStatus {
+    padding: 12px;
+    margin: 16px 0;
+    border-radius: 8px;
+    font-weight: 500;
+    background: var(--background-light);
+    border: 1px solid var(--border-light);
+    text-align: center;
+    color: var(--text-medium);
+    font-size: 0.95rem;
+}
+
+#contractBalance {
+    background: #d4edda;
+    border-color: #c3e6cb;
+    color: var(--text-success);
+}
+
+#ownerStatus {
+    background: #d1ecf1;
+    border-color: #bee5eb;
+    color: var(--text-info);
+}
+
+/* Admin button styling to match other buttons */
+.admin-btn.page-direct {
+    position: absolute;
+    right: 16px;
+    background: var(--primary-purple);
+    color: var(--background-white);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 60px;
+    max-width: 120px;
+}
+
+.admin-btn.page-direct:hover {
+    background: #5a0ea8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(106, 17, 203, 0.3);
+}
+
+/* Deduction History Styling */
+.deduction-history {
+  margin-top: 15px;
+  padding: 12px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  border-left: 4px solid var(--secondary-yellow);
+}
+
+.deduction-history h4 {
+  margin-bottom: 8px;
+  color: var(--text-warning);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.deduction-history p {
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  color: var(--text-warning);
+}
+
+.deduction-history p:last-child {
+  margin-bottom: 0;
+}
+
+/* Mobile responsive for admin button */
+@media (max-width: 480px) {
+    .admin-btn.page-direct {
+        right: 8px;
+        padding: 10px 6px;
+        font-size: 0.75rem;
+        min-width: 50px;
+        max-width: 100px;
+    }
 }

@@ -5,37 +5,156 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - TimeLockedBond</title>
     <link rel="stylesheet" href="styles/fonts.css" />
+    <link rel="stylesheet" href="styles/index.css" />
     <link rel="stylesheet" href="styles/admin.css" />
     <link rel="icon" type="image/png" href="styles/logo.png" />
 </head>
 <body>
-        <div class="top-bar">
-          <button id="connectWallet" class="connect-wallet">Connect Wallet</button>
-        <div class="fixed-logo-bar">
-          <img src="styles/logo.png" alt="Logo" class="logo-img" />
+    <!-- Logo and navigation buttons on same line -->
+    <div class="top-nav">
+      <button id="connectWallet" class="connect-wallet">Connect</button>
+      <img src="styles/logo.png" alt="Logo" class="logo-img" />
+      <button class="admin-btn page-direct" onclick="navigateToDeposit()">Deposit Page</button>
+    </div>
+
+    <div class="container">
+        <h2>Admin Panel</h2>
+        <div id="walletDisplay" class="wallet-display wallet-display-hidden">
+            <span id="walletAddress"></span>
         </div>
-          <button class="back-btn page-direct" onclick="window.location.href='index.html'">Deposit Page</button>
-        </div>
-        <div class="container">
-                <h2>Admin Panel</h2>
-                <div id="contractBalance"></div>
-                <div id="ownerStatus"></div>
-                <form id="deductForm" style="display:none;">
-                        <input type="text" id="userAddress" placeholder="User Address" required />
-                        <input type="number" id="deductAmount" placeholder="Deduct Amount (ETH)" min="0.01" step="0.01" required />
-                        <button type="submit">Deduct</button>
-                </form>
-                <div id="status"></div>
-        </div>
+        <div id="contractBalance"></div>
+        <div id="ownerStatus"></div>
+        <form id="deductForm">
+                <label for="userAddressSelect">Select User:</label>
+                <select id="userAddressSelect" required>
+                    <option value="">Loading addresses...</option>
+                </select>
+                <div id="selectedUserInfo">
+                    <h4>Selected User Bond Info:</h4>
+                    <div id="bondInfo"></div>
+                </div>
+                
+                <div class="deduction-section">
+                    <h4>Make Deduction</h4>
+                    <div class="deduction-field">
+                        <label for="deductAmount" class="deduction-label">Deduction Amount (ETH):</label>
+                        <input type="number" id="deductAmount" step="0.001" min="0.001" placeholder="0.000" required>
+                    </div>
+                    
+                    <div class="deduction-field">
+                        <label for="deductionReason" class="deduction-label">Reason for Deduction:</label>
+                        <select id="deductionReason" required onchange="toggleNotesField()">
+                            <option value="">Select a reason...</option>
+                            <option value="Late Rent Payment">Late Rent Payment</option>
+                            <option value="Property Damages">Property Damages</option>
+                            <option value="Cleaning Fee">Cleaning Fee</option>
+                            <option value="Unpaid Utilities">Unpaid Utilities</option>
+                            <option value="Early Lease Termination">Early Lease Termination</option>
+                            <option value="Pet Policy Violation">Pet Policy Violation</option>
+                            <option value="Noise Complaints">Noise Complaints</option>
+                            <option value="Unauthorized Modifications">Unauthorized Modifications</option>
+                            <option value="Missing/Damaged Items">Missing/Damaged Items</option>
+                            <option value="Administrative Fee">Administrative Fee</option>
+                            <option value="Maintenance Costs">Maintenance Costs</option>
+                            <option value="Other">Other (specify below)</option>
+                        </select>
+                    </div>
+                    
+                    <div id="notesField">
+                        <label for="deductionNotes" class="deduction-label">Additional Notes <span id="notesRequired" class="required-indicator">*</span>:</label>
+                        <textarea id="deductionNotes" rows="3" placeholder="Additional details about the deduction..."></textarea>
+                    </div>
+                </div>
+                
+                <button type="submit" class="deduct-submit-btn">
+                    Make Deduction
+                </button>
+        </form>
+        <div id="status"></div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <script>
     let account;
-    window.addEventListener('DOMContentLoaded', () => {
+    
+    // Helper function to show/hide status div based on content
+    function setStatus(content, isHTML = false) {
+      const statusDiv = document.getElementById('status');
+      if (content && content.trim() !== '') {
+        if (isHTML) {
+          statusDiv.innerHTML = content;
+        } else {
+          statusDiv.innerText = content;
+        }
+        statusDiv.style.display = 'block';
+      } else {
+        statusDiv.innerHTML = '';
+        statusDiv.style.display = 'none';
+      }
+    }
+    
+    window.addEventListener('DOMContentLoaded', async () => {
       account = undefined;
-      document.getElementById('status').innerText = 'Wallet disconnected.';
+      
+      // Check for stored wallet connection
+      const storedWallet = localStorage.getItem('connectedWallet');
+      if (storedWallet && window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts.includes(storedWallet)) {
+            account = storedWallet;
+            await initializeConnectedState();
+            return;
+          } else {
+            // Stored wallet is no longer connected, clear it
+            localStorage.removeItem('connectedWallet');
+          }
+        } catch (err) {
+          console.log('Error checking stored wallet:', err);
+          localStorage.removeItem('connectedWallet');
+        }
+      }
+      
+      setStatus('Wallet disconnected.');
       updateWalletButton();
     });
-    const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Set your deployed address
+    
+    // Function to initialize the connected state
+    async function initializeConnectedState() {
+      document.getElementById('walletAddress').innerText = `Connected: ${account}`;
+      document.getElementById('walletDisplay').classList.remove('wallet-display-hidden');
+      setStatus(''); // Clear status when connected
+      
+      // Show contract balance
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+        const balance = await provider.getBalance(contractAddress);
+        const ethBalance = ethers.utils.formatEther(balance);
+        document.getElementById('contractBalance').innerText = `Contract Balance: ${ethBalance} ETH`;
+      } catch (err) {
+        document.getElementById('contractBalance').innerText = 'Error fetching contract balance.';
+      }
+      
+      // Check if owner
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+        const contract = new ethers.Contract(contractAddress, contractABI, provider);
+        const ownerAddress = await contract.owner();
+        if (account.toLowerCase() === ownerAddress.toLowerCase()) {
+          document.getElementById('ownerStatus').innerText = 'You are the contract owner.';
+          document.getElementById('deductForm').style.display = 'block';
+          await loadDepositorAddresses(); // Load depositor addresses
+        } else {
+          document.getElementById('ownerStatus').innerText = 'You are NOT the contract owner. Admin features are disabled.';
+          document.getElementById('deductForm').style.display = 'none';
+        }
+      } catch (err) {
+        document.getElementById('ownerStatus').innerText = 'Error checking owner: ' + err.message;
+      }
+      
+      updateWalletButton();
+    }
+            // Contract address and ABI
+        const contractAddress = '0x4a5f3678606424017C719C83561D17AbCC7eb9a1'; // Set your deployed address
                         const contractABI = [
                             {
                                 "inputs": [
@@ -123,6 +242,30 @@
                                 "type": "function"
                             },
                             {
+                                "inputs": [],
+                                "name": "getCurrentTimestamp",
+                                "outputs": [
+                                    { "internalType": "uint256", "name": "", "type": "uint256" }
+                                ],
+                                "stateMutability": "view",
+                                "type": "function"
+                            },
+                            {
+                                "inputs": [
+                                    { "internalType": "address", "name": "_depositor", "type": "address" }
+                                ],
+                                "name": "getDepositInfo",
+                                "outputs": [
+                                    { "internalType": "uint256", "name": "amount", "type": "uint256" },
+                                    { "internalType": "uint256", "name": "releaseTime", "type": "uint256" },
+                                    { "internalType": "uint256", "name": "deductedAmount", "type": "uint256" },
+                                    { "internalType": "uint256", "name": "availableAmount", "type": "uint256" },
+                                    { "internalType": "bool", "name": "isWithdrawable", "type": "bool" }
+                                ],
+                                "stateMutability": "view",
+                                "type": "function"
+                            },
+                            {
                                 "inputs": [
                                     { "internalType": "address", "name": "_depositor", "type": "address" }
                                 ],
@@ -141,6 +284,17 @@
                                 "name": "getWithdrawableAmount",
                                 "outputs": [
                                     { "internalType": "uint256", "name": "", "type": "uint256" }
+                                ],
+                                "stateMutability": "view",
+                                "type": "function"
+                            },
+                            {
+                                "inputs": [
+                                    { "internalType": "address", "name": "_depositor", "type": "address" }
+                                ],
+                                "name": "hasDeposit",
+                                "outputs": [
+                                    { "internalType": "bool", "name": "", "type": "bool" }
                                 ],
                                 "stateMutability": "view",
                                 "type": "function"
@@ -182,52 +336,289 @@
         function updateWalletButton() {
           const btn = document.getElementById('connectWallet');
           if (account) {
-            btn.textContent = 'Disconnect Wallet';
+            btn.textContent = 'Disconnect';
             btn.style.background = '#dc3545';
             btn.onclick = () => {
               account = undefined;
-              document.getElementById('status').innerText = 'Wallet disconnected.';
+              localStorage.removeItem('connectedWallet'); // Clear stored connection
+              document.getElementById('walletDisplay').classList.add('wallet-display-hidden');
+              setStatus('Wallet disconnected.');
               document.getElementById('ownerStatus').innerText = '';
               document.getElementById('deductForm').style.display = 'none';
+              document.getElementById('contractBalance').innerText = '';
               updateWalletButton();
             };
           } else {
-            btn.textContent = 'Connect Wallet';
+            btn.textContent = 'Connect';
             btn.style.background = '';
             btn.onclick = async () => {
-              // Show contract balance
-              try {
-                const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-                const balance = await provider.getBalance(contractAddress);
-                const ethBalance = ethers.utils.formatEther(balance);
-                document.getElementById('contractBalance').innerText = `Contract Balance: ${ethBalance} ETH`;
-              } catch (err) {
-                document.getElementById('contractBalance').innerText = 'Error fetching contract balance.';
-              }
               if (window.ethereum) {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                account = accounts[0];
-                document.getElementById('status').innerText = `Connected: ${account}`;
-                // Check if owner
                 try {
-                  const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-                  const contract = new ethers.Contract(contractAddress, contractABI, provider);
-                  const ownerAddress = await contract.owner();
-                  if (account.toLowerCase() === ownerAddress.toLowerCase()) {
-                    document.getElementById('ownerStatus').innerText = 'You are the contract owner.';
-                    document.getElementById('deductForm').style.display = '';
-                  } else {
-                    document.getElementById('ownerStatus').innerText = 'You are NOT the contract owner. Admin features are disabled.';
-                    document.getElementById('deductForm').style.display = 'none';
-                  }
+                  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                  account = accounts[0];
+                  localStorage.setItem('connectedWallet', account); // Store connection
+                  await initializeConnectedState();
                 } catch (err) {
-                  document.getElementById('ownerStatus').innerText = 'Error checking owner: ' + err.message;
+                  if (err.code === 4001) {
+                    setStatus('Connection request rejected by user.');
+                  } else {
+                    setStatus(err.message);
+                  }
                 }
-                updateWalletButton();
               } else {
                 alert('MetaMask not detected!');
               }
             };
+          }
+        }
+
+        // Function to navigate back to deposit page while preserving connection
+        function navigateToDeposit() {
+          if (account) {
+            localStorage.setItem('connectedWallet', account);
+          }
+          window.location.href = 'index.html';
+        }
+
+        // Function to load all depositor addresses
+        async function loadDepositorAddresses() {
+          try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+            const contract = new ethers.Contract(contractAddress, contractABI, provider);
+            
+            console.log('Loading depositor addresses...');
+            console.log('Contract address:', contractAddress);
+            console.log('Connected network:', await provider.getNetwork());
+            
+            // Get all Deposited events from the contract
+            const filter = contract.filters.Deposited();
+            console.log('Event filter created:', filter);
+            
+            let events;
+            try {
+              // For local networks, try querying from a recent block instead of all history
+              const latestBlock = await provider.getBlockNumber();
+              console.log('Latest block:', latestBlock);
+              
+              // Query from block 0 to latest (for local network this should be manageable)
+              events = await contract.queryFilter(filter, 0, latestBlock);
+              console.log('Events found:', events.length);
+              console.log('Raw events:', events);
+            } catch (filterError) {
+              console.log('Error with queryFilter, trying alternative approach:', filterError);
+              // Fallback: try without block range
+              events = await contract.queryFilter(filter);
+            }
+            
+            if (events.length === 0) {
+              console.log('No Deposited events found');
+              
+              // Let's also try to directly check if the current connected wallet has a deposit
+              const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+              if (accounts.length > 0) {
+                const currentAccount = accounts[0];
+                console.log('Checking if current account has deposit:', currentAccount);
+                try {
+                  const hasDeposit = await contract.hasDeposit(currentAccount);
+                  console.log('Current account hasDeposit result:', hasDeposit);
+                  
+                  // Also try getting deposit info directly
+                  try {
+                    const depositInfo = await contract.getDepositInfo(currentAccount);
+                    console.log('Deposit info for current account:', depositInfo);
+                  } catch (depositError) {
+                    console.log('No deposit info for current account:', depositError.message);
+                  }
+                } catch (err) {
+                  console.log('Error checking current account deposit:', err);
+                }
+              }
+              
+              const select = document.getElementById('userAddressSelect');
+              select.innerHTML = '<option value="">No deposits found in events</option>';
+              return;
+            }
+            
+            // Extract unique depositor addresses
+            const depositors = [...new Set(events.map(event => event.args.depositor))];
+            console.log('Unique depositors found:', depositors);
+            
+            // Filter to only include addresses that still have deposits AND are not expired
+            const activeDepositors = [];
+            for (const depositor of depositors) {
+              try {
+                console.log(`Checking deposit for ${depositor}...`);
+                const hasDeposit = await contract.hasDeposit(depositor);
+                console.log(`${depositor} has deposit:`, hasDeposit);
+                
+                if (hasDeposit) {
+                  // Check if the bond has expired
+                  try {
+                    const depositInfo = await contract.getDepositInfo(depositor);
+                    const currentTime = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+                    const releaseTime = depositInfo.releaseTime.toNumber();
+                    const isExpired = currentTime >= releaseTime;
+                    
+                    console.log(`${depositor} bond status:`, {
+                      currentTime: new Date(currentTime * 1000),
+                      releaseTime: new Date(releaseTime * 1000),
+                      isExpired: isExpired,
+                      timeLeft: isExpired ? 0 : releaseTime - currentTime
+                    });
+                    
+                    // Only include if not expired
+                    if (!isExpired) {
+                      activeDepositors.push(depositor);
+                      console.log(`${depositor} added to active depositors (not expired)`);
+                    } else {
+                      console.log(`${depositor} excluded - bond has expired and can be withdrawn`);
+                    }
+                    
+                    // Log deposit info for debugging
+                    console.log(`Deposit info for ${depositor}:`, {
+                      amount: ethers.utils.formatEther(depositInfo.amount),
+                      releaseTime: new Date(depositInfo.releaseTime.toNumber() * 1000),
+                      deductedAmount: ethers.utils.formatEther(depositInfo.deductedAmount),
+                      availableAmount: ethers.utils.formatEther(depositInfo.availableAmount),
+                      isWithdrawable: depositInfo.isWithdrawable,
+                      isExpired: isExpired
+                    });
+                  } catch (infoErr) {
+                    console.log(`Error getting deposit info for ${depositor}:`, infoErr);
+                    // If we can't get deposit info, don't include in active list
+                  }
+                }
+              } catch (err) {
+                console.log(`Error checking deposit for ${depositor}:`, err);
+              }
+            }
+            
+            console.log('Active depositors:', activeDepositors);
+            
+            // Populate the dropdown
+            const select = document.getElementById('userAddressSelect');
+            select.innerHTML = '<option value="">Select a user address</option>';
+            
+            if (activeDepositors.length === 0) {
+              if (depositors.length > 0) {
+                select.innerHTML = '<option value="">No active bonds (all expired/withdrawable)</option>';
+              } else {
+                select.innerHTML = '<option value="">No active deposits found</option>';
+              }
+              return;
+            }
+            
+            activeDepositors.forEach(address => {
+              const option = document.createElement('option');
+              option.value = address;
+              option.textContent = `${address.substring(0, 6)}...${address.substring(38)}`;
+              select.appendChild(option);
+            });
+            
+            // Add change event listener
+            select.onchange = handleAddressSelection;
+            
+          } catch (err) {
+            console.error('Error loading depositor addresses:', err);
+            const select = document.getElementById('userAddressSelect');
+            select.innerHTML = '<option value="">Error loading addresses</option>';
+          }
+        }
+
+        // Function to handle address selection and display bond info
+        async function handleAddressSelection() {
+          const select = document.getElementById('userAddressSelect');
+          const selectedAddress = select.value;
+          const infoDiv = document.getElementById('selectedUserInfo');
+          const bondInfoDiv = document.getElementById('bondInfo');
+          
+          if (!selectedAddress) {
+            infoDiv.style.display = 'none';
+            return;
+          }
+          
+          try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+            const contract = new ethers.Contract(contractAddress, contractABI, provider);
+            
+            // Get deposit info
+            const depositInfo = await contract.getDepositInfo(selectedAddress);
+            const [amount, releaseTime, deductedAmount, availableAmount, isWithdrawable] = depositInfo;
+            
+            const ethAmount = ethers.utils.formatEther(amount);
+            const ethDeducted = ethers.utils.formatEther(deductedAmount);
+            const ethAvailable = ethers.utils.formatEther(availableAmount);
+            
+            const now = Math.floor(Date.now() / 1000);
+            const timeLeft = Math.max(0, releaseTime - now);
+            const days = Math.floor(timeLeft / 86400);
+            const hours = Math.floor((timeLeft % 86400) / 3600);
+            const minutes = Math.floor((timeLeft % 3600) / 60);
+            const seconds = timeLeft % 60;
+            
+            const releaseDate = new Date(releaseTime * 1000).toLocaleString();
+            const isExpired = now >= releaseTime;
+            
+            let statusText = isExpired ? 
+              (isWithdrawable ? "✅ Ready for withdrawal" : "⚠️ Expired but no funds available") : 
+              "🔒 Still locked";
+            
+            // Get deduction history from localStorage
+            const deductionKey = `deduction_${selectedAddress}`;
+            const deductionData = localStorage.getItem(deductionKey);
+            let deductionInfo = '';
+            
+            if (deductionData) {
+              try {
+                const deduction = JSON.parse(deductionData);
+                deductionInfo = `
+                  <div class="deduction-history">
+                    <h4>Deduction History:</h4>
+                    <p><strong>Reason:</strong> ${deduction.reason}</p>
+                    ${deduction.notes ? `<p><strong>Notes:</strong> ${deduction.notes}</p>` : ''}
+                    <p><strong>Deduction Date:</strong> ${new Date(deduction.timestamp).toLocaleString()}</p>
+                    ${deduction.txHash ? `<p><strong>Transaction:</strong> <a href="https://sepolia.etherscan.io/tx/${deduction.txHash}" target="_blank" class="etherscan-link">${deduction.txHash.slice(0, 10)}...${deduction.txHash.slice(-8)}</a></p>` : ''}
+                  </div>
+                `;
+              } catch (e) {
+                console.warn('Error parsing deduction data:', e);
+              }
+            }
+
+            bondInfoDiv.innerHTML = `
+              <p><strong>Address:</strong> ${selectedAddress}</p>
+              <p><strong>Status:</strong> ${statusText}</p>
+              <p><strong>Original Deposit:</strong> ${ethAmount} ETH</p>
+              <p><strong>Deducted Amount:</strong> ${ethDeducted} ETH</p>
+              <p><strong>Available Amount:</strong> ${ethAvailable} ETH</p>
+              <p><strong>Release Date:</strong> ${releaseDate}</p>
+              ${!isExpired ? `<p><strong>Time Remaining:</strong> ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds</p>` : ''}
+              ${deductionInfo}
+            `;
+            
+            infoDiv.style.display = 'block';
+            
+          } catch (err) {
+            console.error('Error getting bond info:', err);
+            bondInfoDiv.innerHTML = `<p class="status-error"><strong>Error:</strong> ${err.message}</p>`;
+            infoDiv.style.display = 'block';
+          }
+        }
+
+        // Function to toggle notes field requirement when "Other" is selected
+        function toggleNotesField() {
+          const reason = document.getElementById('deductionReason').value;
+          const notesField = document.getElementById('deductionNotes');
+          const notesRequired = document.getElementById('notesRequired');
+          
+          if (reason === 'Other') {
+            notesField.required = true;
+            notesRequired.style.display = 'inline';
+            notesField.placeholder = 'Please specify the reason for deduction...';
+          } else {
+            notesField.required = false;
+            notesRequired.style.display = 'none';
+            notesField.placeholder = 'Additional details about the deduction...';
           }
         }
 
@@ -237,23 +628,124 @@
             alert('Connect your wallet first!');
             return;
           }
-          const userAddress = document.getElementById('userAddress').value.trim();
+          
+          const selectedAddress = document.getElementById('userAddressSelect').value;
           const amount = document.getElementById('deductAmount').value;
-          if (!userAddress || amount <= 0) return;
+          const reason = document.getElementById('deductionReason').value;
+          const notes = document.getElementById('deductionNotes').value;
+          
+          if (!selectedAddress) {
+            alert('Please select a user address');
+            return;
+          }
+          
+          if (!amount || amount < 0.001) {
+            alert('Please enter a valid deduct amount (minimum 0.001 ETH)');
+            return;
+          }
+          
+          if (!reason) {
+            alert('Please select a reason for the deduction');
+            return;
+          }
+          
+          if (reason === 'Other' && (!notes || notes.trim() === '')) {
+            alert('Please specify the reason in the notes field when selecting "Other"');
+            return;
+          }
+          
+          // Log deduction details for record keeping
+          const deductionRecord = {
+            address: selectedAddress,
+            amount: amount + ' ETH',
+            reason: reason,
+            notes: notes,
+            timestamp: new Date().toISOString(),
+            executor: account
+          };
+          console.log('Making deduction:', deductionRecord);
+          
           try {
-            if (!ethers.utils.isAddress(userAddress)) {
-              document.getElementById('status').innerText = 'Invalid user address.';
-              return;
-            }
             const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
             const signer = provider.getSigner();
             const contract = new ethers.Contract(contractAddress, contractABI, signer);
-            const tx = await contract.deduct(userAddress, ethers.utils.parseEther(amount));
-            document.getElementById('status').innerText = 'Deduction transaction sent! Waiting for confirmation...';
-            await tx.wait();
-            document.getElementById('status').innerText = 'Deduction successful!';
+            
+            setStatus(`Making deduction: ${amount} ETH for "${reason}"...`);
+            
+            const tx = await contract.deduct(selectedAddress, ethers.utils.parseEther(amount), {
+              gasLimit: 200000, // Set a reasonable gas limit for deductions
+              gasPrice: ethers.utils.parseUnits('20', 'gwei') // Set gas price for Sepolia
+            });
+            setStatus(`
+              <div class="status-info">
+                Deduction transaction sent! Waiting for confirmation...<br>
+                <small>Amount: ${amount} ETH | Reason: ${reason}</small>
+              </div>
+            `, true);
+            const receipt = await tx.wait();
+            
+            // Check if we're on Sepolia network and show Etherscan link
+            const network = await provider.getNetwork();
+            
+            // Store deduction reason with transaction hash for future reference
+            const fullReason = reason === 'Other' ? `Other: ${notes}` : reason;
+            const deductionData = {
+              txHash: tx.hash,
+              address: selectedAddress,
+              amount: amount,
+              reason: fullReason,
+              timestamp: new Date().toISOString(),
+              executor: account
+            };
+            
+            // Store in localStorage for future reference
+            const existingDeductions = JSON.parse(localStorage.getItem('deductionReasons') || '[]');
+            existingDeductions.push(deductionData);
+            localStorage.setItem('deductionReasons', JSON.stringify(existingDeductions));
+            
+            // Also store individual deduction data for the specific address
+            const individualKey = `deduction_${selectedAddress}`;
+            const individualDeductionData = {
+              reason: fullReason,
+              notes: notes || '',
+              timestamp: Date.now(),
+              txHash: tx.hash
+            };
+            localStorage.setItem(individualKey, JSON.stringify(individualDeductionData));
+            
+            // Enhanced success message with network-specific links
+            if (network.chainId === 11155111) { // Sepolia chainId
+              const etherscanUrl = `https://sepolia.etherscan.io/tx/${tx.hash}`;
+              setStatus(`
+                <div class="status-success">
+                  ✅ Deduction successful!<br>
+                  <small>Amount: ${amount} ETH<br>
+                  Reason: ${fullReason}<br>
+                  Transaction Hash: ${tx.hash}<br>
+                  <a href="${etherscanUrl}" target="_blank" class="etherscan-link">View on Sepolia Etherscan</a></small>
+                </div>
+              `, true);
+            } else {
+              setStatus(`
+                <div class="status-success">
+                  ✅ Deduction successful!<br>
+                  <small>Amount: ${amount} ETH<br>
+                  Reason: ${fullReason}<br>
+                  Transaction Hash: ${tx.hash}</small>
+                </div>
+              `, true);
+            }
+            
+            // Refresh the bond info for the selected user
+            await handleAddressSelection();
+            
+            // Clear the form fields
+            document.getElementById('deductAmount').value = '';
+            document.getElementById('deductionReason').value = '';
+            document.getElementById('deductionNotes').value = '';
+            
           } catch (err) {
-            document.getElementById('status').innerText = err.message;
+            setStatus(`Error: ${err.message}`);
           }
         };
     </script>
