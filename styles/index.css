@@ -27,6 +27,28 @@
   
   --shadow-primary: rgba(106, 17, 203, 0.12);
   --shadow-light: rgba(106, 17, 203, 0.08);
+  
+  /* === TYPOGRAPHY SYSTEM === */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* === SPACING SYSTEM === */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
 }
 
 /* CSS Reset and Base Styles */
@@ -45,7 +67,9 @@ body {
   font-family: 'Inter', Arial, sans-serif;
   background: var(--background-white);
   color: var(--text-dark);
-  padding-top: 0; /* No need for padding since elements aren't fixed */
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  padding-top: 0;
 }
 
 /* Logo and buttons on same line */
@@ -53,8 +77,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px 16px;
-  margin-bottom: 20px;
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
   position: relative;
 }
 
@@ -67,14 +91,14 @@ body {
 /* Position buttons absolutely to maintain logo centering */
 #connectWallet {
   position: absolute;
-  left: 16px;
+  left: var(--spacing-lg);
   background: var(--primary-blue);
   color: var(--background-white);
   border: none;
-  border-radius: 8px;
-  padding: 12px 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: 60px;
@@ -90,14 +114,14 @@ body {
 /* Admin Button - Positioned absolutely on the right */
 #adminLogin {
   position: absolute;
-  right: 16px;
+  right: var(--spacing-lg);
   background: var(--primary-purple);
   color: var(--background-white);
   border: none;
-  border-radius: 8px;
-  padding: 12px 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: 60px;
@@ -119,11 +143,11 @@ body {
 }
 .container {
   max-width: 600px;
-  margin: 20px auto;
+  margin: var(--spacing-xl) auto;
   background: rgba(255,255,255,0.95);
-  border-radius: 16px;
+  border-radius: var(--spacing-lg);
   box-shadow: 0 6px 32px var(--shadow-primary);
-  padding: 32px 24px;
+  padding: var(--spacing-3xl) var(--spacing-2xl);
   word-wrap: break-word;
   word-break: break-all;
   overflow-wrap: break-word;
@@ -132,20 +156,33 @@ body {
 
 h1, h2, h3 {
   color: var(--primary-purple);
-  font-weight: 700;
-  margin-bottom: 16px;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-lg);
   letter-spacing: 0.5px;
 }
 
+h1 {
+  font-size: var(--font-size-2xl);
+}
+
+h2 {
+  font-size: var(--font-size-xl);
+}
+
+h3 {
+  font-size: var(--font-size-lg);
+}
+
 label {
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-sm);
   display: block;
   color: var(--text-medium);
+  font-size: var(--font-size-base);
 }
 
 small {
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   color: var(--text-light);
   line-height: 1.4;
 }
@@ -157,13 +194,13 @@ input[type="password"],
 input[type="email"],
 select {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 16px;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
   border: 2px solid var(--border-light);
-  border-radius: 8px;
+  border-radius: var(--spacing-sm);
   background: var(--background-light);
   color: var(--text-dark);
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   box-sizing: border-box;
   transition: all 0.3s ease;
 }
@@ -185,14 +222,14 @@ input[type="submit"] {
   background: var(--primary-blue);
   color: var(--background-white);
   border: none;
-  border-radius: 8px;
-  padding: 12px 0;
-  font-size: 1rem;
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-md) 0;
+  font-size: var(--font-size-base);
   cursor: pointer;
-  margin-bottom: 14px;
+  margin-bottom: var(--spacing-sm);
   width: 100%;
   box-sizing: border-box;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
 }
@@ -214,9 +251,9 @@ input[type="submit"]:active {
   background: var(--secondary-yellow);
   color: #212529;
   border: 2px solid var(--secondary-yellow);
-  margin-top: 10px;
-  font-size: 14px;
-  font-weight: 600;
+  margin-top: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 #refreshTimeBtn:hover {
@@ -225,6 +262,67 @@ input[type="submit"]:active {
   color: #212529;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+/* Action Buttons Section */
+#actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin: var(--spacing-lg) 0;
+  padding: var(--spacing-md);
+  background: var(--background-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--spacing-sm);
+}
+
+#refreshStatusBtn {
+  background: var(--secondary-green);
+  color: white;
+  border: 2px solid var(--secondary-green);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--spacing-sm) var(--spacing-lg);
+}
+
+#refreshStatusBtn:hover {
+  background: var(--secondary-green-hover);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+#refreshStatusBtn:disabled {
+  background: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Force refresh button styling */
+#forceRefreshBtn {
+  background: var(--secondary-yellow);
+  color: #212529;
+  border: 2px solid var(--secondary-yellow);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+#forceRefreshBtn:hover {
+  background: var(--secondary-yellow-hover);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+/* Responsive design for action buttons */
+@media (min-width: 768px) {
+  #actionButtons {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  #actionButtons button {
+    flex: 0 1 auto;
+    min-width: 140px;
+  }
 }
 
 button:disabled {
@@ -237,7 +335,7 @@ button:disabled {
 /* Withdraw Button */
 #withdrawBtn {
   background: var(--secondary-green);
-  margin-top: 16px;
+  margin-top: var(--spacing-lg);
 }
 
 #withdrawBtn:hover {
@@ -247,19 +345,19 @@ button:disabled {
 
 /* Status and Result Styling */
 #status, #depositStatus {
-  padding: 12px;
-  margin: 16px 0;
-  border-radius: 8px;
-  font-weight: 500;
+  padding: var(--spacing-md);
+  margin: var(--spacing-lg) 0;
+  border-radius: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
   white-space: pre-line;
   background: var(--background-light);
   border: 1px solid var(--border-light);
   word-wrap: break-word;
   word-break: break-all;
   overflow-wrap: break-word;
-  text-align: center;
+  text-align: left;
   color: var(--text-medium);
-  font-size: 0.95rem;
 }
 
 /* Lookup Section Styling */
@@ -309,26 +407,26 @@ button:disabled {
 /* Responsive Design */
 @media (max-width: 480px) {
   .container {
-    margin: 16px;
-    padding: 24px 16px;
+    margin: var(--spacing-lg);
+    padding: var(--spacing-2xl) var(--spacing-lg);
   }
   
   .top-nav {
-    padding: 8px 12px;
+    padding: var(--spacing-sm) var(--spacing-md);
   }
   
   #connectWallet {
-    left: 8px;
-    padding: 10px 6px;
-    font-size: 0.75rem;
+    left: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-sm);
+    font-size: var(--font-size-xs);
     min-width: 50px;
     max-width: 75px;
   }
   
   #adminLogin {
-    right: 8px;
-    padding: 10px 6px;
-    font-size: 0.75rem;
+    right: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-sm);
+    font-size: var(--font-size-xs);
     min-width: 50px;
     max-width: 75px;
   }
@@ -336,18 +434,30 @@ button:disabled {
   .logo-img {
     height: 45px;
     max-width: 150px;
-    top: 8px;
+    top: var(--spacing-sm);
+  }
+  
+  h1 {
+    font-size: var(--font-size-xl);
+  }
+  
+  h2 {
+    font-size: var(--font-size-lg);
+  }
+  
+  h3 {
+    font-size: var(--font-size-base);
   }
 }
 
 /* Wallet Display Styling */
 .wallet-display {
-  margin: 10px 0;
-  padding: 10px;
+  margin: var(--spacing-md) 0;
+  padding: var(--spacing-md);
   background-color: #e8f5e8;
   border: 1px solid var(--secondary-green);
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: var(--spacing-sm);
+  font-size: var(--font-size-sm);
   color: #2e7d32;
   text-align: center;
 }
@@ -364,7 +474,7 @@ button:disabled {
 
 /* Divider */
 .divider {
-  margin: 10px 0;
+  margin: var(--spacing-md) 0;
 }
 
 /* Etherscan Links */
@@ -375,55 +485,28 @@ button:disabled {
 
 /* Status Display */
 #status {
-  margin-top: 15px;
+  margin-top: var(--spacing-lg);
   min-height: 0;
   display: none;
-  padding: 10px;
-  border-radius: 6px;
+  padding: var(--spacing-md);
+  border-radius: var(--spacing-sm);
   border: 1px solid #ddd;
   background-color: var(--background-light);
 }
 
 /* Withdraw Status Display */
 #withdrawStatus {
-  margin-top: 15px;
+  margin-top: var(--spacing-lg);
   min-height: 0;
   display: none;
-  padding: 12px;
-  border-radius: 8px;
+  padding: var(--spacing-md);
+  border-radius: var(--spacing-sm);
   border: 2px solid var(--secondary-green);
   background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
   color: var(--text-success);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   text-align: center;
   box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
-}
-
-/* Deduction History Styling */
-.deduction-history {
-  margin-top: 15px;
-  padding: 12px;
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 8px;
-  border-left: 4px solid var(--secondary-yellow);
-}
-
-.deduction-history h4 {
-  margin-bottom: 8px;
-  color: var(--text-warning);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.deduction-history p {
-  margin-bottom: 5px;
-  font-size: 0.9rem;
-  color: var(--text-warning);
-}
-
-.deduction-history p:last-child {
-  margin-bottom: 0;
 }
 
 /* Confetti Animation */

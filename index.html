@@ -49,9 +49,15 @@
       <div id="depositStatus">
         Please connect your wallet to view your bond status.
       </div>
-      <button id="withdrawBtn">Withdraw</button>
+      
+      <!-- Action buttons section -->
+      <div id="actionButtons" style="display: none;">
+        <button id="withdrawBtn" style="display: none;">💰 Withdraw</button>
+        <button id="refreshStatusBtn" style="display: none;">🔄 Refresh Status</button>
+        <button id="forceRefreshBtn" style="display: none;">⚡ Force Blockchain Update</button>
+      </div>
+      
       <button id="refreshTimeBtn" style="display: none;">🔄 Refresh Blockchain Time</button>
-      <button id="forceRefreshBtn" style="display: none;">⚡ Force Blockchain Update</button>
       <div id="withdrawStatus" style="display: none;"></div>
     </div>
 
@@ -385,14 +391,15 @@
         const withdrawBtn = document.getElementById("withdrawBtn");
         const refreshTimeBtn = document.getElementById("refreshTimeBtn");
         const forceRefreshBtn = document.getElementById("forceRefreshBtn");
+        const refreshStatusBtn = document.getElementById("refreshStatusBtn");
+        const actionButtons = document.getElementById("actionButtons");
         const adminBtn = document.getElementById("adminLogin");
         
         if (!account) {
           document.getElementById("depositStatus").innerHTML =
             "Please connect your wallet to view your bond status.";
-          withdrawBtn.style.display = "none";
+          actionButtons.style.display = "none";
           refreshTimeBtn.style.display = "none";
-          forceRefreshBtn.style.display = "none";
           if (adminBtn) {
             adminBtn.style.display = "none"; // Hide admin button when no wallet connected
           }
@@ -491,131 +498,42 @@
             isExpired ? 
               (isWithdrawable ? "✅ Ready for withdrawal" : "⚠️ Expired but no funds available") : 
               "🔒 Still locked";
-              
-          // Add time sync warning if there's significant lag
-          if (Math.abs(blockchainLag) > 60) { // More than 1 minute difference
-            const lagDirection = blockchainLag < 0 ? "behind" : "ahead of";
-            statusText += `<br><small style="color: var(--text-warning);">⚠️ Blockchain time is ${blockchainLagMinutes}m ${blockchainLagSeconds}s ${lagDirection} local time</small>`;
-          }
-          
-          let timeInfo = "";
-          if (!isExpired && !withdrawn) {
-            const timeLeftBlockchain = releaseTime - blockTimestamp;
-            const timeLeftLocal = releaseTime - currentTime;
-            
-            const daysB = Math.floor(timeLeftBlockchain / 86400);
-            const hoursB = Math.floor((timeLeftBlockchain % 86400) / 3600);
-            const minutesB = Math.floor((timeLeftBlockchain % 3600) / 60);
-            const secondsB = timeLeftBlockchain % 60;
-            
-            const daysL = Math.floor(timeLeftLocal / 86400);
-            const hoursL = Math.floor((timeLeftLocal % 86400) / 3600);
-            const minutesL = Math.floor((timeLeftLocal % 3600) / 60);
-            const secondsL = timeLeftLocal % 60;
-            
-            timeInfo = `
-              <div id="countdownDisplay">
-                <p><strong>Time Remaining (Blockchain):</strong> ${daysB} days, ${hoursB} hours, ${minutesB} minutes, ${secondsB} seconds</p>
-                <p style="font-size: 0.9em; color: var(--text-medium);"><strong>Time Remaining (Local):</strong> ${timeLeftLocal > 0 ? `${daysL} days, ${hoursL} hours, ${minutesL} minutes, ${secondsL} seconds` : 'EXPIRED'}</p>
-                <p style="font-size: 0.85em; color: var(--text-light);"><em>Contract uses blockchain time (top) • Live countdown enabled</em></p>
-              </div>
-            `;
-            
-            // Start the live countdown timer
-            startCountdownTimer(blockTimestamp, releaseTime, provider);
-          } else if (isExpiredByLocalTime && !isExpired) {
-            // Special case: expired by local time but not blockchain time
-            const timeLeftBlockchain = releaseTime - blockTimestamp;
-            const daysB = Math.floor(timeLeftBlockchain / 86400);
-            const hoursB = Math.floor((timeLeftBlockchain % 86400) / 3600);
-            const minutesB = Math.floor((timeLeftBlockchain % 3600) / 60);
-            const secondsB = timeLeftBlockchain % 60;
-            
-            timeInfo = `
-              <div id="countdownDisplay">
-                <p style="color: var(--text-warning);"><strong>⏰ Time Sync Issue:</strong></p>
-                <p><strong>Local Time:</strong> EXPIRED ✅</p>
-                <p><strong>Blockchain Time:</strong> ${daysB} days, ${hoursB} hours, ${minutesB} minutes, ${secondsB} seconds remaining</p>
-                <p style="font-size: 0.85em; color: var(--text-light);"><em>Withdrawal will be available when blockchain time catches up</em></p>
-              </div>
-            `;
-            
-            // Start the live countdown timer
-            startCountdownTimer(blockTimestamp, releaseTime, provider);
-          } else {
-            // Clear any existing countdown timer when expired or withdrawn
-            clearCountdownTimer();
-          }
 
-          // Get deduction history from localStorage
-          const deductionKey = `deduction_${account}`;
-          const deductionData = localStorage.getItem(deductionKey);
-          let deductionInfo = '';
-          let deductionReason = '';
-          
-          console.log('Looking for deduction data with key:', deductionKey);
-          console.log('Found deduction data:', deductionData);
-          console.log('Deducted amount (ETH):', ethDeducted, 'Parsed float:', parseFloat(ethDeducted));
-          
-          if (deductionData && parseFloat(ethDeducted) > 0) {
-            try {
-              const deduction = JSON.parse(deductionData);
-              console.log('Parsed deduction:', deduction);
-              // Simple reason line for under the deducted amount
-              deductionReason = `<p style="margin-left: 20px; color: var(--text-warning); font-style: italic;"><small>Reason: ${deduction.reason}</small></p>`;
-              
-              // Full deduction history section
-              deductionInfo = `
-                <div class="deduction-history">
-                  <h4>Deduction Details:</h4>
-                  <p><strong>Reason:</strong> ${deduction.reason}</p>
-                  ${deduction.notes ? `<p><strong>Notes:</strong> ${deduction.notes}</p>` : ''}
-                  <p><strong>Deduction Date:</strong> ${new Date(deduction.timestamp).toLocaleString()}</p>
-                  ${deduction.txHash ? `<p><strong>Transaction:</strong> <a href="https://sepolia.etherscan.io/tx/${deduction.txHash}" target="_blank" class="etherscan-link">${deduction.txHash.slice(0, 10)}...${deduction.txHash.slice(-8)}</a></p>` : ''}
-                </div>
-              `;
-            } catch (e) {
-              console.warn('Error parsing deduction data:', e);
-            }
-          } else {
-            console.log('No deduction reason to show - either no data or no deduction amount');
-          }
-
-          document.getElementById("depositStatus").innerHTML = `
-            <p><strong>Address:</strong> ${account}</p>
-            <p><strong>Status:</strong> ${statusText}</p>
-            <p><strong>Original Deposit:</strong> ${ethAmount} ETH</p>
-            <p><strong>Deducted Amount:</strong> ${ethDeducted} ETH</p>
-            ${deductionReason}
-            <p><strong>Available for Withdrawal:</strong> ${ethAvailable} ETH</p>
-            <p><strong>Release Date:</strong> ${releaseDate}</p>
-            ${timeInfo}
-            ${deductionInfo}
-          `;
-
-          // Show withdraw button if funds are unlocked and available
-          if (isWithdrawable && parseFloat(ethAvailable) > 0 && !withdrawn) {
-            withdrawBtn.style.display = "block";
-            refreshTimeBtn.style.display = "none"; // Hide refresh button when withdrawal is ready
-            forceRefreshBtn.style.display = "none";
-          } else {
-            withdrawBtn.style.display = "none";
-            
-            // Show refresh time button if expired on frontend but not withdrawable (local network issue)
-            const network = await provider.getNetwork();
-            if ((network.chainId === 31337 || network.chainId === 1337) && isExpired && !isWithdrawable && parseFloat(ethAmount) > 0) {
-              refreshTimeBtn.style.display = "block";
-              forceRefreshBtn.style.display = "none";
-            } else if (isExpiredByLocalTime && !isExpired && parseFloat(ethAmount) > 0) {
-              // Show force refresh for Sepolia when there's a time sync issue
-              refreshTimeBtn.style.display = "none";
-              forceRefreshBtn.style.display = "block";
-            } else {
-              refreshTimeBtn.style.display = "none";
-              forceRefreshBtn.style.display = "none";
-            }
-          }
+        // Always show action buttons section when connected and have deposit info
+        actionButtons.style.display = "block";
+        refreshStatusBtn.style.display = "block";
+        document.getElementById("depositStatus").innerHTML = `
+          <p><strong>Address:</strong> ${account}</p>
+          <p><strong>Status:</strong> ${statusText}</p>
+          <p><strong>Original Deposit:</strong> ${ethAmount} ETH</p>
+          <p><strong>Deducted Amount:</strong> ${ethDeducted} ETH</p>
+          <p><strong>Available for Withdrawal Upon Release:</strong> ${ethAvailable} ETH</p>
+          <p style="font-size: 0.75rem; color: var(--text-light); margin-top: -8px;"><em>(Refresh status after release time to view)</em></p>
+          <p><strong>Release Date:</strong> ${releaseDate}</p>
+        `;
+        
+        // Always show action buttons section when connected and have deposit info
+        actionButtons.style.display = "block";
+        refreshStatusBtn.style.display = "block";
+        
+        // Show withdraw button if funds are unlocked and available
+        if (isWithdrawable && parseFloat(ethAvailable) > 0 && !withdrawn) {
+          withdrawBtn.style.display = "block";
+        } else {
+          withdrawBtn.style.display = "none";
+        }
+        
+        // Hide all other buttons - only use Refresh Status and Withdraw
+        refreshTimeBtn.style.display = "none";
+        forceRefreshBtn.style.display = "none";
         } catch (err) {
+          // Show action buttons even when no deposit (for refresh functionality)
+          actionButtons.style.display = "block";
+          refreshStatusBtn.style.display = "block";
+          withdrawBtn.style.display = "none";
+          refreshTimeBtn.style.display = "none";
+          forceRefreshBtn.style.display = "none";
+          
           // Detect 'No deposit found' error
           if (err.message && err.message.includes("No deposit found")) {
             document.getElementById("depositStatus").innerHTML = `
@@ -628,8 +546,6 @@
               <p>Error: ${err.message}</p>
             `;
           }
-          withdrawBtn.style.display = "none";
-          refreshTimeBtn.style.display = "none";
         }
       }
       document.getElementById("withdrawBtn").onclick = async () => {
@@ -928,6 +844,55 @@
           setStatus(err.message);
         }
       };
+
+      // Refresh Status button - sends small ETH transaction to trigger blockchain updates
+      document.getElementById("refreshStatusBtn")?.addEventListener("click", async () => {
+        if (!account) return;
+        
+        const refreshStatusBtn = document.getElementById("refreshStatusBtn");
+        const originalText = refreshStatusBtn.textContent;
+        
+        try {
+          refreshStatusBtn.textContent = "🔄 Refreshing...";
+          refreshStatusBtn.disabled = true;
+          
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          
+          // Send a very small amount of ETH to self to trigger new block
+          const tx = await signer.sendTransaction({
+            to: account,
+            value: ethers.utils.parseEther("0.0001"), // 0.0001 ETH
+            gasLimit: 21000,
+            gasPrice: ethers.utils.parseUnits('20', 'gwei')
+          });
+          
+          console.log("Refresh transaction sent:", tx.hash);
+          refreshStatusBtn.textContent = "🔄 Refreshing...";
+          
+          // Wait for transaction to be mined
+          await tx.wait();
+          
+          console.log("Refresh transaction mined - updating status");
+          
+          // Now update the deposit status
+          await updateDepositStatus();
+          
+          refreshStatusBtn.textContent = "✅ Refreshed";
+          setTimeout(() => {
+            refreshStatusBtn.textContent = originalText;
+            refreshStatusBtn.disabled = false;
+          }, 1000);
+          
+        } catch (err) {
+          refreshStatusBtn.textContent = "❌ Error";
+          console.error("Refresh error:", err);
+          setTimeout(() => {
+            refreshStatusBtn.textContent = originalText;
+            refreshStatusBtn.disabled = false;
+          }, 2000);
+        }
+      });
 
       document.getElementById("adminLogin")?.addEventListener("click", () => {
         clearWithdrawStatus(); // Clear withdraw success message

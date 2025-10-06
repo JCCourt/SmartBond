@@ -27,37 +27,74 @@
   
   --shadow-primary: rgba(106, 17, 203, 0.12);
   --shadow-light: rgba(106, 17, 203, 0.08);
+  
+  /* === TYPOGRAPHY SYSTEM === */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* === SPACING SYSTEM === */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
 }
 
 body {
   font-family: 'Inter', Arial, sans-serif;
   background: var(--background-white);
   color: var(--text-dark);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
   margin: 0;
   padding: 0;
 }
 
 .container {
   max-width: 600px;
-  margin: 48px auto;
+  margin: var(--spacing-3xl) auto;
   background: rgba(255,255,255,0.95);
-  border-radius: 16px;
+  border-radius: var(--spacing-lg);
   box-shadow: 0 6px 32px var(--shadow-primary);
-  padding: 32px 24px;
+  padding: var(--spacing-3xl) var(--spacing-2xl);
 }
 
 h1, h2, h3 {
   color: var(--primary-purple);
-  font-weight: 700;
-  margin-bottom: 16px;
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-lg);
   letter-spacing: 0.5px;
 }
 
+h1 {
+  font-size: var(--font-size-2xl);
+}
+
+h2 {
+  font-size: var(--font-size-xl);
+}
+
+h3 {
+  font-size: var(--font-size-lg);
+}
+
 label {
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-sm);
   display: block;
   color: var(--text-medium);
+  font-size: var(--font-size-base);
 }
 
 input[type="text"],
@@ -65,13 +102,13 @@ input[type="number"],
 input[type="password"],
 input[type="email"] {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 16px;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
   border: 2px solid var(--border-light);
-  border-radius: 8px;
+  border-radius: var(--spacing-sm);
   background: var(--background-light);
   color: var(--text-dark);
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   box-sizing: border-box;
   transition: all 0.3s ease;
 }
@@ -91,14 +128,14 @@ input[type="submit"] {
   background: var(--primary-blue);
   color: var(--background-white);
   border: none;
-  border-radius: 8px;
-  padding: 12px 0;
-  font-size: 1rem;
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-md) 0;
+  font-size: var(--font-size-base);
   cursor: pointer;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-lg);
   width: 100%;
   box-sizing: border-box;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
 }
@@ -124,29 +161,29 @@ button:disabled {
 
 button.connect-wallet,
 button.page-direct {
-    padding: 6px 18px;
-    font-size: 1rem;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: var(--font-size-base);
     min-width: 0;
     width: auto;
-    border-radius: 6px;
+    border-radius: var(--spacing-sm);
 }
 
 .top-bar button.connect-wallet {
-    margin-left: 16px;
+    margin-left: var(--spacing-lg);
 }
 
 .top-bar .back-btn.page-direct {
-    margin-right: 16px;
+    margin-right: var(--spacing-lg);
 }
 
 .status {
   background: var(--background-purple-light);
   color: var(--primary-blue);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 18px;
-  font-size: 1rem;
-  font-weight: 500;
+  border-radius: var(--spacing-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   border: 1px solid var(--border-light);
 }
 
@@ -467,33 +504,6 @@ button.page-direct {
     background: #5a0ea8;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(106, 17, 203, 0.3);
-}
-
-/* Deduction History Styling */
-.deduction-history {
-  margin-top: 15px;
-  padding: 12px;
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 8px;
-  border-left: 4px solid var(--secondary-yellow);
-}
-
-.deduction-history h4 {
-  margin-bottom: 8px;
-  color: var(--text-warning);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.deduction-history p {
-  margin-bottom: 5px;
-  font-size: 0.9rem;
-  color: var(--text-warning);
-}
-
-.deduction-history p:last-child {
-  margin-bottom: 0;
 }
 
 /* Mobile responsive for admin button */
