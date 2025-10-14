@@ -738,6 +738,8 @@
 
       function updateWalletButton() {
         const btn = document.getElementById("connectWallet");
+        btn.classList.add("connectWallet"); // Apply the CSS class for alignment
+        
         const adminBtn = document.getElementById("adminLogin");
         
         if (account) {
@@ -848,49 +850,41 @@
       // Refresh Status button - sends small ETH transaction to trigger blockchain updates
       document.getElementById("refreshStatusBtn")?.addEventListener("click", async () => {
         if (!account) return;
-        
-        const refreshStatusBtn = document.getElementById("refreshStatusBtn");
-        const originalText = refreshStatusBtn.textContent;
-        
+
         try {
-          refreshStatusBtn.textContent = "🔄 Refreshing...";
-          refreshStatusBtn.disabled = true;
-          
           const provider = new ethers.providers.Web3Provider(window.ethereum);
-          const signer = provider.getSigner();
-          
-          // Send a very small amount of ETH to self to trigger new block
-          const tx = await signer.sendTransaction({
-            to: account,
-            value: ethers.utils.parseEther("0.0001"), // 0.0001 ETH
-            gasLimit: 21000,
-            gasPrice: ethers.utils.parseUnits('20', 'gwei')
-          });
-          
-          console.log("Refresh transaction sent:", tx.hash);
-          refreshStatusBtn.textContent = "🔄 Refreshing...";
-          
-          // Wait for transaction to be mined
-          await tx.wait();
-          
-          console.log("Refresh transaction mined - updating status");
-          
-          // Now update the deposit status
-          await updateDepositStatus();
-          
-          refreshStatusBtn.textContent = "✅ Refreshed";
-          setTimeout(() => {
-            refreshStatusBtn.textContent = originalText;
-            refreshStatusBtn.disabled = false;
-          }, 1000);
-          
+
+          // Log the network details for debugging
+          const network = await provider.getNetwork();
+          console.log("Connected to network:", network);
+
+          // Use MetaMask's provider to fetch the latest block details
+          const block = await provider.getBlock("latest");
+          const blockTimestamp = block.timestamp;
+
+          console.log("Blockchain time (block timestamp):", blockTimestamp);
+
+          // Check if the release time has passed
+          const contract = new ethers.Contract(contractAddress, contractABI, provider);
+          const bondData = await contract.getDepositInfo(account);
+          const [, releaseTime] = bondData;
+
+          const releaseTimeNumber = releaseTime.toNumber(); // Convert BigNumber to number
+          console.log("Release time from contract (as number):", releaseTimeNumber);
+
+          if (blockTimestamp >= releaseTimeNumber) {
+            console.log("Time has passed. Showing withdraw button.");
+            // Time has passed, show the withdraw button
+            const withdrawBtn = document.getElementById("withdrawBtn");
+            withdrawBtn.style.display = "block";
+          } else {
+            console.log("Time has not passed. Hiding withdraw button.");
+            // Time has not passed, hide the withdraw button
+            const withdrawBtn = document.getElementById("withdrawBtn");
+            withdrawBtn.style.display = "none";
+          }
         } catch (err) {
-          refreshStatusBtn.textContent = "❌ Error";
-          console.error("Refresh error:", err);
-          setTimeout(() => {
-            refreshStatusBtn.textContent = originalText;
-            refreshStatusBtn.disabled = false;
-          }, 2000);
+          console.error("Error checking blockchain time:", err);
         }
       });
 
@@ -947,9 +941,18 @@
         return new Date(timestamp * 1000).toLocaleString();
       }
 
-    </script>
-  </body>
-</html>
+      // Add a note under the refresh status button
+      const refreshStatusNote = document.createElement("p");
+      refreshStatusNote.textContent = "Tip: Click on your wallet extension to update the blockchain time.";
+      refreshStatusNote.style.fontSize = "0.85rem";
+      refreshStatusNote.style.color = "var(--text-light)";
+      refreshStatusNote.style.marginTop = "8px";
+      refreshStatusNote.style.textAlign = "center";
+
+      const refreshStatusBtn = document.getElementById("refreshStatusBtn");
+      if (refreshStatusBtn && refreshStatusBtn.parentNode) {
+        refreshStatusBtn.parentNode.insertBefore(refreshStatusNote, refreshStatusBtn.nextSibling);
+      }
     </script>
   </body>
 </html>
