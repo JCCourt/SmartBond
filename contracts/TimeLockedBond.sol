@@ -34,18 +34,19 @@ contract TimeLockedBond is Ownable, ReentrancyGuard {
         ReentrancyGuard()
     {}
 
-function depositETH() external payable {
-    require(msg.value > 0, "Amount must be > 0");
-    deposits[msg.sender] = Deposit({
-        depositor: payable(msg.sender),
-        amount: msg.value,
-        releaseTime: block.timestamp + DURATION,
-        deductedAmount: 0
-    });
-    emit Deposited(msg.sender, msg.value, deposits[msg.sender].releaseTime);
-}
+    // Allows users to deposit ETH into the contract, locking it for a fixed duration.
+    function depositETH() external payable {
+        require(msg.value > 0, "Amount must be > 0");
+        deposits[msg.sender] = Deposit({
+            depositor: payable(msg.sender),
+            amount: msg.value,
+            releaseTime: block.timestamp + DURATION,
+            deductedAmount: 0
+        });
+        emit Deposited(msg.sender, msg.value, deposits[msg.sender].releaseTime);
+    }
 
-    // Owner deducts a penalty/fee from a deposit
+    // Allows the owner to deduct a specified amount from a user's deposit as a penalty or fee.
     function deduct(address _depositor, uint256 _amount)
         external
         onlyOwner
@@ -69,7 +70,7 @@ function depositETH() external payable {
         );
     }
 
-    // Withdraw after 1 year
+    // Allows users to withdraw their deposit after the lock duration has passed.
     function withdraw() external nonReentrant {
         Deposit storage depositRecord = deposits[msg.sender];
         require(depositRecord.amount > 0, "No deposit exists");
@@ -88,7 +89,7 @@ function depositETH() external payable {
         emit Withdrawn(msg.sender, withdrawableAmount);
     }
 
-    // View remaining withdrawable amount
+    // Returns the amount that a user can withdraw, considering deductions and lock duration.
     function getWithdrawableAmount(address _depositor)
         external
         view
@@ -105,25 +106,26 @@ function depositETH() external payable {
         return 0;
     }
 
-function getTimeLeftReadable(address _depositor)
-    external
-    view
-    returns (uint256, uint256) // No names here
-{
-    require(deposits[_depositor].amount > 0, "No deposit found");
+    // Returns the time left (in days and hours) until a user's deposit can be withdrawn.
+    function getTimeLeftReadable(address _depositor)
+        external
+        view
+        returns (uint256, uint256) // No names here
+    {
+        require(deposits[_depositor].amount > 0, "No deposit found");
 
-    if (block.timestamp >= deposits[_depositor].releaseTime) {
-        return (0, 0);
-    } else {
-        uint256 timeLeft = deposits[_depositor].releaseTime - block.timestamp;
-        return (
-            timeLeft / 86400, // days
-            (timeLeft % 86400) / 3600 // hours
-        );
+        if (block.timestamp >= deposits[_depositor].releaseTime) {
+            return (0, 0);
+        } else {
+            uint256 timeLeft = deposits[_depositor].releaseTime - block.timestamp;
+            return (
+                timeLeft / 86400, // days
+                (timeLeft % 86400) / 3600 // hours
+            );
+        }
     }
-}
 
-    // Get complete deposit information
+    // Returns detailed information about a user's deposit, including amounts and withdrawable status.
     function getDepositInfo(address _depositor)
         external
         view
@@ -156,12 +158,12 @@ function getTimeLeftReadable(address _depositor)
         );
     }
 
-    // Check if deposit exists for an address
+    // Checks if a deposit exists for a given address.
     function hasDeposit(address _depositor) external view returns (bool) {
         return deposits[_depositor].amount > 0;
     }
 
-    // Debug function to check current timestamp
+    // Returns the current block timestamp for debugging purposes.
     function getCurrentTimestamp() external view returns (uint256) {
         return block.timestamp;
     }
