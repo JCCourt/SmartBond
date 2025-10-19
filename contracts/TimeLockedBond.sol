@@ -34,6 +34,13 @@ contract TimeLockedBond is Ownable, ReentrancyGuard {
         ReentrancyGuard()
     {}
 
+    // =====================================================================
+    // WRITE FUNCTIONS - State-changing operations
+    // =====================================================================
+
+    // WRITE FUNCTION - Stores user deposit data
+    // Stores: User address, deposit amount, release time, and deducted amount (initialized to 0)
+    // Mapping: deposits[msg.sender] = Deposit struct
     // Allows users to deposit ETH into the contract, locking it for a fixed duration.
     function depositETH() external payable {
         require(msg.value > 0, "Amount must be > 0");
@@ -46,8 +53,12 @@ contract TimeLockedBond is Ownable, ReentrancyGuard {
         emit Deposited(msg.sender, msg.value, deposits[msg.sender].releaseTime);
     }
 
+    // WRITE FUNCTION - Deducts amount from user deposit
+    // Stores: Updates deductedAmount field in deposits mapping for the specified depositor
+    // Transfers deducted ETH to contract owner
+    // Mapping: deposits[_depositor].deductedAmount updated
     // Allows the owner to deduct a specified amount from a user's deposit as a penalty or fee.
-    function deduct(address _depositor, uint256 _amount)
+    function deductETH(address _depositor, uint256 _amount)
         external
         onlyOwner
         nonReentrant
@@ -70,8 +81,12 @@ contract TimeLockedBond is Ownable, ReentrancyGuard {
         );
     }
 
+    // WRITE FUNCTION - Withdraws user deposit and deletes deposit record
+    // Stores: Deletes deposits[msg.sender] entry from mapping after withdrawal
+    // Transfers withdrawable amount to user
+    // Mapping: deposits[msg.sender] deleted
     // Allows users to withdraw their deposit after the lock duration has passed.
-    function withdraw() external nonReentrant {
+    function withdrawETH() external nonReentrant {
         Deposit storage depositRecord = deposits[msg.sender];
         require(depositRecord.amount > 0, "No deposit exists");
         require(
@@ -89,42 +104,13 @@ contract TimeLockedBond is Ownable, ReentrancyGuard {
         emit Withdrawn(msg.sender, withdrawableAmount);
     }
 
-    // Returns the amount that a user can withdraw, considering deductions and lock duration.
-    function getWithdrawableAmount(address _depositor)
-        external
-        view
-        returns (uint256)
-    {
-        Deposit storage depositRecord = deposits[_depositor];
-        // Check if deposit exists first
-        if (depositRecord.amount == 0) {
-            return 0;
-        }
-        if (block.timestamp >= depositRecord.releaseTime) {
-            return depositRecord.amount - depositRecord.deductedAmount;
-        }
-        return 0;
-    }
+    // =====================================================================
+    // READ FUNCTIONS - View-only operations (no state changes)
+    // =====================================================================
 
-    // Returns the time left (in days and hours) until a user's deposit can be withdrawn.
-    function getTimeLeftReadable(address _depositor)
-        external
-        view
-        returns (uint256, uint256) // No names here
-    {
-        require(deposits[_depositor].amount > 0, "No deposit found");
-
-        if (block.timestamp >= deposits[_depositor].releaseTime) {
-            return (0, 0);
-        } else {
-            uint256 timeLeft = deposits[_depositor].releaseTime - block.timestamp;
-            return (
-                timeLeft / 86400, // days
-                (timeLeft % 86400) / 3600 // hours
-            );
-        }
-    }
-
+    // READ FUNCTION - No data storage
+    // Reads from: deposits mapping (complete Deposit struct for depositor)
+    // Returns: Deposit amount, release time, deducted amount, available amount, and withdrawal status
     // Returns detailed information about a user's deposit, including amounts and withdrawable status.
     function getDepositInfo(address _depositor)
         external
@@ -158,14 +144,11 @@ contract TimeLockedBond is Ownable, ReentrancyGuard {
         );
     }
 
-    // Checks if a deposit exists for a given address.
+    // READ FUNCTION - No data storage
+    // Reads from: deposits mapping (checks if amount > 0 for depositor)
+    // Returns: Boolean indicating if a deposit exists for the given address
     function hasDeposit(address _depositor) external view returns (bool) {
         return deposits[_depositor].amount > 0;
-    }
-
-    // Returns the current block timestamp for debugging purposes.
-    function getCurrentTimestamp() external view returns (uint256) {
-        return block.timestamp;
     }
 
 }

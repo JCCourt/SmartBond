@@ -149,7 +149,7 @@
       updateWalletButton();
     }
             // Contract address and ABI
-        const contractAddress = '0x4a5f3678606424017C719C83561D17AbCC7eb9a1'; // Set your deployed address
+        const contractAddress = '0x1693E3550A169234CfA7190ACB5E0ffE27697917'; // Set your deployed address
                         const contractABI = [
                             {
                                 "inputs": [
@@ -224,7 +224,7 @@
                                     { "internalType": "address", "name": "_depositor", "type": "address" },
                                     { "internalType": "uint256", "name": "_amount", "type": "uint256" }
                                 ],
-                                "name": "deduct",
+                                "name": "deductETH",
                                 "outputs": [],
                                 "stateMutability": "nonpayable",
                                 "type": "function"
@@ -234,15 +234,6 @@
                                 "name": "depositETH",
                                 "outputs": [],
                                 "stateMutability": "payable",
-                                "type": "function"
-                            },
-                            {
-                                "inputs": [],
-                                "name": "getCurrentTimestamp",
-                                "outputs": [
-                                    { "internalType": "uint256", "name": "", "type": "uint256" }
-                                ],
-                                "stateMutability": "view",
                                 "type": "function"
                             },
                             {
@@ -256,29 +247,6 @@
                                     { "internalType": "uint256", "name": "deductedAmount", "type": "uint256" },
                                     { "internalType": "uint256", "name": "availableAmount", "type": "uint256" },
                                     { "internalType": "bool", "name": "isWithdrawable", "type": "bool" }
-                                ],
-                                "stateMutability": "view",
-                                "type": "function"
-                            },
-                            {
-                                "inputs": [
-                                    { "internalType": "address", "name": "_depositor", "type": "address" }
-                                ],
-                                "name": "getTimeLeftReadable",
-                                "outputs": [
-                                    { "internalType": "uint256", "name": "", "type": "uint256" },
-                                    { "internalType": "uint256", "name": "", "type": "uint256" }
-                                ],
-                                "stateMutability": "view",
-                                "type": "function"
-                            },
-                            {
-                                "inputs": [
-                                    { "internalType": "address", "name": "_depositor", "type": "address" }
-                                ],
-                                "name": "getWithdrawableAmount",
-                                "outputs": [
-                                    { "internalType": "uint256", "name": "", "type": "uint256" }
                                 ],
                                 "stateMutability": "view",
                                 "type": "function"
@@ -321,7 +289,7 @@
                             },
                             {
                                 "inputs": [],
-                                "name": "withdraw",
+                                "name": "withdrawETH",
                                 "outputs": [],
                                 "stateMutability": "nonpayable",
                                 "type": "function"
@@ -657,7 +625,7 @@
 
             setStatus(`Making deduction: ${amount} ETH for "${reason}"...`);
 
-            const tx = await contract.deduct(selectedAddress, ethers.utils.parseEther(amount), {
+            const tx = await contract.deductETH(selectedAddress, ethers.utils.parseEther(amount), {
               gasLimit: 200000, // Set a reasonable gas limit for deductions
               gasPrice: ethers.utils.parseUnits('20', 'gwei') // Set gas price for Sepolia
             });
